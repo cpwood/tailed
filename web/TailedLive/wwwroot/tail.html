@@ -1,0 +1,247 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Tailed</title>
+
+    <link href="/colors.css" rel="stylesheet" />
+    <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet' />
+    <link rel="icon" href="/favicon.svg">
+
+<style type="text/css">
+        body {
+            font-family: 'Roboto Mono';
+            font-size: min(16px, 2.0vw); 
+            font-weight: bold;
+            line-height: 1.4em;
+            color: var(--ansi-white);
+            background-color: var(--ansi-black);
+        }
+
+        #header {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            width: 100%;
+            text-align: right;
+            background-image: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1));
+        }
+
+        #latest {
+            font-family: 'Roboto Mono';
+            font-size: 14px;
+            background-color: var(--ansi-black);
+            border: 1px solid black;
+            color: var(--ansi-white);
+            padding: 5px;
+            margin: 30px;
+            cursor: pointer;
+        }
+
+        #scroller {
+            position: relative;
+        }
+
+        #spacer {
+            height: 100.001vh;
+        }
+
+        #scroller * {
+            overflow-anchor: none;
+        }
+
+        #anchor {
+            overflow-anchor: auto;
+            height: 2px;
+            width: 100px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+        
+        .hidden {
+            visibility: hidden;
+        }
+        
+        .shown {
+            visibility: visible;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+
+<script type="module">
+        import { AnsiUp } from '/ansi_up.js';
+
+        const tailId = window.location.pathname.replace('/', '');
+        const ansi_up = new AnsiUp();
+        ansi_up.use_classes = true;
+
+        let spanIndex = 0;
+        const maxRows = 1000;
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl('/api/tail')
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        async function start() {
+            try {
+                await connection.start();
+                console.log('SignalR Connected.');
+
+                await connection.invoke('Join', tailId);
+                console.log('Awaiting data..');
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
+
+        connection.onclose(async () => {
+            await start();
+        });
+
+        const clearOutOld = () => {
+            const elements = Array.from(document.getElementsByClassName('message'))
+                .filter(x => x.id < `span_${String(spanIndex - (maxRows / 2)).padStart(10, '0')}`);
+
+            for (let element of elements) {
+                element.remove();
+            }
+        }
+
+        let lastSpan = null;
+        let cursorPosition = 1;
+
+        connection.on('ReceiveData', (data) => {
+            const formatted = ansi_up.ansi_to_html(data);
+
+            if (lastSpan && formatted.indexOf('\n') == -1) {
+                let match = data.match(/^\x1b\[([0-9])+g$/i);
+
+                if (match && match.length == 2) {
+                    cursorPosition = parseInt(match[1]);
+                    return;
+                }
+
+                match = data.toUpperCase().match(/^\x1b\[([0-9]*[JK])$/);
+
+                if (match && match.length == 2) {
+                    switch (match[1]) {
+                        case 'J':
+                        case '0J':
+                            if (lastSpan.innerHTML.substring(cursorPosition - 1).indexOf('\n') >= 0)
+                                return;
+
+                            lastSpan.innerHTML = lastSpan.innerHTML.substring(0, cursorPosition - 1);
+                            break;
+                        case '1J':
+                            lastSpan.innerHTML = lastSpan.innerHTML.substring(cursorPosition - 1);
+                            break;
+                        case '2J':
+                        case '3J':
+                            if (lastSpan.substring(0, 1) == '\n') {
+                                lastSpan.innerHTML = '\n';
+                            }
+                            else {
+                                lastSpan.innerHTML = '';
+                            }
+                            break;
+                        case 'K':
+                        case '0K':
+                            if (lastSpan.innerHTML.substring(cursorPosition - 1).indexOf('\n') >= 0)
+                                return;
+
+                            lastSpan.innerHTML = lastSpan.innerHTML.substring(0, cursorPosition - 1);
+                            break;
+                        case '1K':
+                            lastSpan.innerHTML = lastSpan.innerHTML.substring(cursorPosition - 1);
+                            break;
+                        case '2K':
+                            if (lastSpan.substring(0, 1) == '\n') {
+                                lastSpan.innerHTML = '\n';
+                            }
+                            else {
+                                lastSpan.innerHTML = '';
+                            }
+                            break;
+                    }
+                    return;
+                }
+
+                lastSpan.innerHTML += formatted;
+                cursorPosition = lastSpan.innerHTML.length;
+                return;
+            }
+
+            const span = document.createElement('span');
+            span.id = `span_${String(spanIndex).padStart(10, '0')}`;
+            span.classList.add('message');
+            spanIndex++;
+            span.innerHTML = formatted;
+            document.querySelector('#scroller').insertBefore(span, document.querySelector('#anchor'));
+            lastSpan = span;
+
+            if (formatted.indexOf('\n') == -1)
+                cursorPosition = formatted.length;
+
+            if (spanIndex % maxRows == 0) {
+                clearOutOld();
+            }
+        });
+
+        function elementIsVisibleInViewport(el, partiallyVisible = false) {
+            const { top, left, bottom, right } = el.getBoundingClientRect();
+            const { innerHeight, innerWidth } = window;
+            return partiallyVisible
+                ? ((top > 0 && top < innerHeight) ||
+                    (bottom > 0 && bottom < innerHeight)) &&
+                ((left > 0 && left < innerWidth) || (right > 0 && right < innerWidth))
+                : top >= 0 && left >= 0 && bottom <= innerHeight && right <= innerWidth;
+        };
+
+        const anchor = document.getElementById('anchor');
+        const latest = document.getElementById('latest');
+
+        let spacerMinimised = false;
+
+        addEventListener('scroll', (event) => {
+            if (!spacerMinimised) {
+                const spacer = document.getElementById('spacer');
+
+                if (spacer && !elementIsVisibleInViewport(spacer, true)) {
+                    spacer.style.height = '50px';
+                    spacerMinimised = true;
+                }
+            }
+
+            if (elementIsVisibleInViewport(anchor)) {
+                latest.classList.remove('shown');
+                latest.classList.add('hidden')
+            }
+            else {
+                latest.classList.add('shown');
+                latest.classList.remove('hidden')
+            }
+        });
+
+        start();
+
+    </script>
+</head>
+<body>
+    <pre id="scroller"><div id="spacer"></div><div id="anchor"></div></pre>
+    <div style="height:50px;"></div>
+    <div id="header">
+        <button id="latest" onclick="window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);">Latest &#129047;</button>
+    </div>
+
+    <script type="text/javascript">
+        setTimeout(() => {
+            window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
+        }, 250);
+    </script>
+</body>
+</html>

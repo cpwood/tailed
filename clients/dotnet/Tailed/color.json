@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Warning",
+    "pattern": "\\[WARN\\]",
+    "ignoreCase":  false,
+    "background": "Yellow",
+    "foreground":  "White",
+    "mode": "First"
+  }
+]
