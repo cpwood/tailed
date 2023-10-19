@@ -6,7 +6,7 @@ internal static class ConsoleScenario
 {
     public static async Task RunAsync()
     {
-        await using var session = new ConsoleSession(false, "localhost:44318");
+        await using var session = new ConsoleSession(false, Constants.Hostname);
         session.Start();
 
         Console.WriteLine("Hello world!");

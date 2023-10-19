@@ -1,21 +1,37 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <title>Tailed</title>
 
-    <link href="/colors.css" rel="stylesheet" />
-    <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet' />
+    <link href="/colors.css" rel="stylesheet"/>
+    <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'/>
     <link rel="icon" href="/favicon.svg">
 
-<style type="text/css">
+    <style type="text/css">
         body {
             font-family: 'Roboto Mono';
-            font-size: min(16px, 2.0vw); 
+            /*font-size: min(16px, 2.0vw);*/
+            font-size: 14px;
             font-weight: bold;
             line-height: 1.4em;
             color: var(--ansi-white);
             background-color: var(--ansi-black);
+        }
+
+        /* tablet styles */
+        @media screen and (min-width: 768px) {
+            body {
+                font-size: 10px;
+            }
+        }
+        
+        /* desktop styles */
+        @media screen and (min-width: 1024px) {
+            body {
+                font-size: 16px;
+            }
         }
 
         #header {
@@ -25,18 +41,24 @@
             z-index: 1000;
             width: 100%;
             text-align: right;
-            background-image: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1));
+            background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
         }
 
         #latest {
             font-family: 'Roboto Mono';
-            font-size: 14px;
+            /*font-size: max(16px, 2.0vw);*/
+            font-size: 18px;
             background-color: var(--ansi-black);
             border: 1px solid black;
             color: var(--ansi-white);
             padding: 5px;
             margin: 30px;
             cursor: pointer;
+        }
+        
+        #latest img {
+            width: 15px;
+            vertical-align: text-bottom;
         }
 
         #scroller {
@@ -47,23 +69,18 @@
             height: 100.001vh;
         }
 
-        #scroller * {
-            overflow-anchor: none;
-        }
-
         #anchor {
-            overflow-anchor: auto;
             height: 2px;
             width: 100px;
             position: absolute;
             bottom: 0;
             left: 0;
         }
-        
+
         .hidden {
             visibility: hidden;
         }
-        
+
         .shown {
             visibility: visible;
         }
@@ -71,8 +88,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 
-<script type="module">
-        import { AnsiUp } from '/ansi_up.js';
+    <script type="module">
+        import {AnsiUp} from '/ansi_up.js';
 
         const tailId = window.location.pathname.replace('/', '');
         const ansi_up = new AnsiUp();
@@ -80,6 +97,8 @@
 
         let spanIndex = 0;
         const maxRows = 1000;
+        let forceButtonOffUntil = 0;
+        const isIos = window.navigator.userAgent.indexOf('iPhone OS') != -1;
 
         const connection = new signalR.HubConnectionBuilder()
             .withUrl('/api/tail')
@@ -144,8 +163,7 @@
                         case '3J':
                             if (lastSpan.substring(0, 1) == '\n') {
                                 lastSpan.innerHTML = '\n';
-                            }
-                            else {
+                            } else {
                                 lastSpan.innerHTML = '';
                             }
                             break;
@@ -162,8 +180,7 @@
                         case '2K':
                             if (lastSpan.substring(0, 1) == '\n') {
                                 lastSpan.innerHTML = '\n';
-                            }
-                            else {
+                            } else {
                                 lastSpan.innerHTML = '';
                             }
                             break;
@@ -181,7 +198,17 @@
             span.classList.add('message');
             spanIndex++;
             span.innerHTML = formatted;
+            
+            const bottom = elementIsVisibleInViewport(document.getElementById('anchor'));
+            
             document.querySelector('#scroller').insertBefore(span, document.querySelector('#anchor'));
+            
+            if (bottom) {
+                forceButtonOffUntil = Date.now() + 1000;
+                setTimeout(() => checkButton(), 1000);
+                window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
+            }
+            
             lastSpan = span;
 
             if (formatted.indexOf('\n') == -1)
@@ -193,8 +220,8 @@
         });
 
         function elementIsVisibleInViewport(el, partiallyVisible = false) {
-            const { top, left, bottom, right } = el.getBoundingClientRect();
-            const { innerHeight, innerWidth } = window;
+            const {top, left, bottom, right} = el.getBoundingClientRect();
+            const {innerHeight, innerWidth} = window;
             return partiallyVisible
                 ? ((top > 0 && top < innerHeight) ||
                     (bottom > 0 && bottom < innerHeight)) &&
@@ -206,25 +233,33 @@
         const latest = document.getElementById('latest');
 
         let spacerMinimised = false;
-
-        addEventListener('scroll', (event) => {
-            if (!spacerMinimised) {
+        
+        const checkButton = () => {
+            if (!spacerMinimised && !isIos) {
                 const spacer = document.getElementById('spacer');
 
-                if (spacer && !elementIsVisibleInViewport(spacer, true)) {
+                if (spanIndex > 0 && !elementIsVisibleInViewport(spacer, true)) {
                     spacer.style.height = '50px';
                     spacerMinimised = true;
                 }
             }
 
-            if (elementIsVisibleInViewport(anchor)) {
+            if (Date.now() < forceButtonOffUntil || elementIsVisibleInViewport(anchor)) {
                 latest.classList.remove('shown');
                 latest.classList.add('hidden')
-            }
-            else {
+            } else {
                 latest.classList.add('shown');
                 latest.classList.remove('hidden')
             }
+        };
+
+        addEventListener('scroll', (event) => {
+            checkButton();
+        });
+
+        document.getElementById('anchor').scrollIntoView({
+            behavior: 'auto',
+            block: 'end'
         });
 
         start();
@@ -232,16 +267,18 @@
     </script>
 </head>
 <body>
-    <pre id="scroller"><div id="spacer"></div><div id="anchor"></div></pre>
-    <div style="height:50px;"></div>
-    <div id="header">
-        <button id="latest" onclick="window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);">Latest &#129047;</button>
-    </div>
+<pre id="scroller"><div id="spacer"></div><div id="anchor"></div></pre>
+<div style="height:50px;"></div>
+<div id="header">
+    <button id="latest"
+            onclick="window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);">Latest <img src="/logo_white.svg" />
+    </button>
+</div>
 
-    <script type="text/javascript">
-        setTimeout(() => {
-            window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
-        }, 250);
-    </script>
+<script type="text/javascript">
+    setTimeout(() => {
+        window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
+    }, 250);
+</script>
 </body>
 </html>

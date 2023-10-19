@@ -15,7 +15,7 @@ internal static class FileScenario
         if (File.Exists("test.log"))
             File.Delete("test.log");
 
-        await using var session = new MonitorSession("localhost:44318");
+        await using var session = new MonitorSession(Constants.Hostname);
         _ = session.MonitorFileAsync("test.log", list.Rules, CancellationToken.None);
 
         Log.Logger = new LoggerConfiguration()

@@ -19,7 +19,7 @@ var tailHtml = await File.ReadAllTextAsync("wwwroot/tail.html");
 app.MapWhen(x => Regex.IsMatch(x.Request.Path.ToString(), @"^/[a-zA-Z0-9_\-=]{22}$"), 
     config =>
 {
-    config.Run(async context => await context.Response.WriteAsync(await File.ReadAllTextAsync("wwwroot/tail.html")));
+    config.Run(async context => await context.Response.WriteAsync(tailHtml));
 });
 
 

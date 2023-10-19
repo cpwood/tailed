@@ -9,7 +9,7 @@ internal static class LogScenario
 {
     public static async Task RunAsync()
     {
-        await using var session = new ConsoleSession(true/*, "localhost:44318"*/);
+        await using var session = new ConsoleSession(true, Constants.Hostname);
         session.Start();
 
         var serviceProvider = new ServiceCollection()

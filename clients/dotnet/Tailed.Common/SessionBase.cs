@@ -37,8 +37,6 @@ namespace Tailed.Common
         /// </summary>
         protected void RenderSessionInformation()
         {
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.BackgroundColor = ConsoleColor.Black;
             Console.Clear();
 
             Console.WriteLine($"   {Uri}");
@@ -49,10 +47,10 @@ namespace Tailed.Common
 
             var palette = new
             {
-                WHITE_ALL = Encoding.UTF8.GetString(Encoding.Convert(Encoding.Unicode, Encoding.UTF8, Encoding.Unicode.GetBytes("\u2588"))),
-                WHITE_BLACK = Encoding.UTF8.GetString(Encoding.Convert(Encoding.Unicode, Encoding.UTF8, Encoding.Unicode.GetBytes("\u2580"))),
-                BLACK_WHITE = Encoding.UTF8.GetString(Encoding.Convert(Encoding.Unicode, Encoding.UTF8, Encoding.Unicode.GetBytes("\u2584"))),
-                BLACK_ALL = "　",
+                WHITE_ALL = $"{AnsiCodes.BrightWhiteForeground}{Encoding.UTF8.GetString(Encoding.Convert(Encoding.Unicode, Encoding.UTF8, Encoding.Unicode.GetBytes("\u2588")))}",
+                WHITE_BLACK = $"{AnsiCodes.BrightWhiteForeground}{Encoding.UTF8.GetString(Encoding.Convert(Encoding.Unicode, Encoding.UTF8, Encoding.Unicode.GetBytes("\u2580")))}",
+                BLACK_WHITE = $"{AnsiCodes.BrightWhiteForeground}{Encoding.UTF8.GetString(Encoding.Convert(Encoding.Unicode, Encoding.UTF8, Encoding.Unicode.GetBytes("\u2584")))}",
+                BLACK_ALL = $"{AnsiCodes.BlackForeground}{Encoding.UTF8.GetString(Encoding.Convert(Encoding.Unicode, Encoding.UTF8, Encoding.Unicode.GetBytes("\u2588")))}",
             };
 
             var white = false;
@@ -61,8 +59,6 @@ namespace Tailed.Common
             var oddRow = moduleData.Count % 2 == 1;
             if (oddRow)
                 moduleData.Add(new System.Collections.BitArray(moduleData[0].Count));
-
-            Console.ForegroundColor = ConsoleColor.White;
 
             for (var row = 0; row < moduleData.Count; row += 2)
             {
@@ -87,7 +83,6 @@ namespace Tailed.Common
             Console.Write("   Press any key to continue..");
 
             Console.ReadKey();
-            Console.ResetColor();
             Console.Clear();
         }
 
