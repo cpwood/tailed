@@ -10,8 +10,4 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.12" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="wwwroot\tail.html" />
-  </ItemGroup>
-
 </Project>

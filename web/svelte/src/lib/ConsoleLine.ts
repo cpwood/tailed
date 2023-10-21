@@ -1,0 +1,80 @@
+import { AnsiUp } from 'ansi_up';
+
+export class ConsoleLine {
+    id: number;
+    content: string;
+    cursorPosition: number;
+
+    private _ansiUp = new AnsiUp();
+
+    constructor(id: number, content: string) {
+        this.id = id;
+        this.content = content;
+        this.cursorPosition = 0;
+    }
+
+    asHtml(): string {
+        return this._ansiUp.ansi_to_html(this.content);
+    }
+
+    appendText(text: string) {
+        let match = text.match(/^\x1b\[([0-9])+g$/i);
+
+        if (match && match.length == 2) {
+            this.cursorPosition = parseInt(match[1]);
+            return;
+        }
+
+        match = text.toUpperCase().match(/^\x1b\[([0-9]*[JK])$/);
+
+        if (match && match.length == 2) {
+            switch (match[1]) {
+                case 'J':
+                case '0J':
+                    this.removeBeforeCursor();
+                    break;
+                case '1J':
+                    this.removeAfterCursor();
+                    break;
+                case '2J':
+                case '3J':
+                    this.removeLine();
+                    break;
+                case 'K':
+                case '0K':
+                    this.removeBeforeCursor();
+                    break;
+                case '1K':
+                    this.removeAfterCursor();
+                    break;
+                case '2K':
+                    this.removeLine();
+                    break;
+            }
+            return;
+        }
+
+        this.content += text;
+        this.cursorPosition = this.content.length;
+    }
+
+    private removeBeforeCursor() {
+        // Don't remove anything if there's a linebreak after the cursor position.
+        if (this.content.substring(this.cursorPosition - 1).indexOf('\n') >= 0)
+            return;
+
+        this.content = this.content.substring(0, this.cursorPosition - 1);
+    }
+
+    private removeAfterCursor() {
+        this.content = this.content.substring(this.cursorPosition - 1);
+    }
+
+    private removeLine() {
+        if (this.content.substring(0, 1) == '\n') {
+            this.content = '\n';
+        } else {
+            this.content = '';
+        }
+    }
+}
