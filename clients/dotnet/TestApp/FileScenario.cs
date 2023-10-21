@@ -30,7 +30,7 @@ internal static class FileScenario
             )
             .BuildServiceProvider();
 
-        var logger = serviceProvider.GetService<ILoggerFactory>()!.CreateLogger<Program>();
+        var logger = serviceProvider.GetService<ILoggerFactory>()!.CreateLogger<Foo>();
 
         logger.LogInformation("Started The Test");
 

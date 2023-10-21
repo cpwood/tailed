@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Tailed": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    }
+  }
+}

@@ -1,9 +1,11 @@
-﻿using Tailed.Common;
+﻿using System.Text.Json.Serialization;
+using Tailed.Common;
 
 namespace Tailed;
 
 public class ColorizationRule
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum Modes
     {
         First,

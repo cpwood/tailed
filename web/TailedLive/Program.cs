@@ -16,6 +16,12 @@ app.UseStaticFiles();
 
 var tailHtml = await File.ReadAllTextAsync("wwwroot/tail.html");
 
+app.Map("/", (HttpContext context) =>
+{
+    context.Response.Redirect(Environment.GetEnvironmentVariable("CUSTOM_HOMEPAGE") ??
+                              "https://docs.tailed.live/");
+});
+
 app.MapWhen(x => Regex.IsMatch(x.Request.Path.ToString(), @"^/[a-zA-Z0-9_\-=]{22}$"), 
     config =>
 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 
 namespace Tailed.Common
 {
@@ -11,12 +12,14 @@ namespace Tailed.Common
         /// <summary>
         /// Defines whether a color is being used in the foreground or background.
         /// </summary>
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum ColorPosition
         {
             Foreground,
             Background
         }
 
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum Colors
         {
             Black,

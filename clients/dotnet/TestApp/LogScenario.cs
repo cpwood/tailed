@@ -19,7 +19,7 @@ internal static class LogScenario
             )
             .BuildServiceProvider();
 
-        var logger = serviceProvider.GetService<ILoggerFactory>()!.CreateLogger<Program>();
+        var logger = serviceProvider.GetService<ILoggerFactory>()!.CreateLogger<Foo>();
 
         logger.LogInformation("Started The Test".Pastel(ConsoleColor.Red).PastelBg(ConsoleColor.Yellow));
 
