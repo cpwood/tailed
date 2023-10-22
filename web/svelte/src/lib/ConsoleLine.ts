@@ -1,20 +1,12 @@
-import { AnsiUp } from 'ansi_up';
-
 export class ConsoleLine {
     id: number;
     content: string;
     cursorPosition: number;
 
-    private _ansiUp = new AnsiUp();
-
     constructor(id: number, content: string) {
         this.id = id;
         this.content = content;
         this.cursorPosition = 0;
-    }
-
-    asHtml(): string {
-        return this._ansiUp.ansi_to_html(this.content);
     }
 
     appendText(text: string) {
