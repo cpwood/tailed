@@ -2,6 +2,8 @@ import chalk from 'chalk';
 import * as readline from 'node:readline/promises';
 import { ConsoleSession } from './ConsoleSession.js';
 
+//process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
+
 const session = new ConsoleSession();
 await session.start(); // Anything after this will appear in Tailed.
 

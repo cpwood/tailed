@@ -22,6 +22,7 @@ namespace Tailed.Common
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum Colors
         {
+            Default,
             Black,
             Red,
             Green,
@@ -40,6 +41,9 @@ namespace Tailed.Common
             BrightWhite
         }
 
+        public static string DefaultForeground = "\x1b[39m";
+        public static string DefaultBackground = "\x1b[49m";
+        
         public static string BlackForeground = "\x1b[30m";
         public static string RedForeground = "\x1b[31m";
         public static string GreenForeground = "\x1b[32m";
@@ -87,6 +91,11 @@ namespace Tailed.Common
         {
             if (position == ColorPosition.Foreground)
             {
+                if ((int) color == -1)
+                {
+                    return DefaultForeground;
+                }
+                
                 switch (color)
                 {
                     case ConsoleColor.Black:
@@ -125,6 +134,11 @@ namespace Tailed.Common
             }
             else
             {
+                if ((int) color == -1)
+                {
+                    return DefaultBackground;
+                }
+                
                 switch (color)
                 {
                     case ConsoleColor.Black:
@@ -178,6 +192,8 @@ namespace Tailed.Common
             {
                 switch (color)
                 {
+                    case Colors.Default:
+                        return DefaultForeground;
                     case Colors.Black:
                         return BlackForeground;
                     case Colors.Red:
@@ -216,6 +232,8 @@ namespace Tailed.Common
             {
                 switch (color)
                 {
+                    case Colors.Default:
+                        return DefaultBackground;
                     case Colors.Black:
                         return BlackBackground;
                     case Colors.Red:

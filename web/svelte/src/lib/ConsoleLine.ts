@@ -18,10 +18,10 @@ export class ConsoleLine {
     }
 
     appendText(text: string) {
-        let match = text.match(/^\x1b\[([0-9])+g$/i);
+        let match = text.match(/^\x1b\[([0-9]+)g$/i);
 
         if (match && match.length == 2) {
-            this.cursorPosition = parseInt(match[1]);
+            this.cursorPosition = parseInt(match[1]) - 1;
             return;
         }
 
@@ -31,10 +31,10 @@ export class ConsoleLine {
             switch (match[1]) {
                 case 'J':
                 case '0J':
-                    this.removeBeforeCursor();
+                    this.removeAfterCursor();
                     break;
                 case '1J':
-                    this.removeAfterCursor();
+                    this.removeBeforeCursor();
                     break;
                 case '2J':
                 case '3J':
@@ -42,10 +42,10 @@ export class ConsoleLine {
                     break;
                 case 'K':
                 case '0K':
-                    this.removeBeforeCursor();
+                    this.removeAfterCursor();
                     break;
                 case '1K':
-                    this.removeAfterCursor();
+                    this.removeBeforeCursor();
                     break;
                 case '2K':
                     this.removeLine();
@@ -58,16 +58,16 @@ export class ConsoleLine {
         this.cursorPosition = this.content.length;
     }
 
-    private removeBeforeCursor() {
+    private removeAfterCursor() {
         // Don't remove anything if there's a linebreak after the cursor position.
-        if (this.content.substring(this.cursorPosition - 1).indexOf('\n') >= 0)
+        if (this.content.substring(this.cursorPosition).indexOf('\n') >= 0)
             return;
 
-        this.content = this.content.substring(0, this.cursorPosition - 1);
+        this.content = this.content.substring(0, this.cursorPosition);
     }
 
-    private removeAfterCursor() {
-        this.content = this.content.substring(this.cursorPosition - 1);
+    private removeBeforeCursor() {
+        this.content = this.content.substring(this.cursorPosition);
     }
 
     private removeLine() {

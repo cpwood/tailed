@@ -39,62 +39,56 @@ internal class MonitorSession : SessionBase
 
             foreach (var rule in rules)
             {
-                if (rule.Mode == ColorizationRule.Modes.First)
-                {
-                    line = ProcessRule(rule, line).Line;
-                }
-                else
-                {
-                    var success = true;
-
-                    while (success)
-                    {
-                        var result = ProcessRule(rule, line);
-                        line = result.Line;
-                        success = result.Success;
-                    }
-                }
+                line = rule.Mode == ColorizationRule.Modes.First
+                    ? ProcessRuleFirst(rule, line)
+                    : ProcessRuleAll(rule, line);
             }
 
             await Client.SendLineAsync($"{line}\n");
         }
     }
 
-    private RuleResult ProcessRule(ColorizationRule rule, string line)
+    private string ProcessRuleFirst(ColorizationRule rule, string line)
     {
         var match = Regex.Match(line, rule.Pattern,
             rule.IgnoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
 
+        return ProcessMatch(match, rule, line);
+    }
+    
+    private string ProcessRuleAll(ColorizationRule rule, string line)
+    {
+        var matches = Regex.Matches(line, rule.Pattern,
+            rule.IgnoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
+
+        for (var i = matches.Count - 1; i >= 0; i--)
+        {
+            line = ProcessMatch(matches[i], rule, line);
+        }
+
+        return line;
+    }
+
+    private string ProcessMatch(Match match, ColorizationRule rule, string line)
+    {
+        if (!match.Success)
+            return line;
+        
         var index = match.Index;
         var length = match.Length;
 
-        if (match.Groups.Count > 1)
+        if (match.Groups["c"].Success)
         {
-            index = match.Groups[1].Index;
-            length = match.Groups[1].Length;
+            index = match.Groups["c"].Index;
+            length = match.Groups["c"].Length;
         }
-
-        if (!match.Success)
-            return new RuleResult(false, line);
-
+        
         line = line.Insert(index + length,
-            $"{AnsiCodes.BlackBackground}{AnsiCodes.WhiteForeground}");
+            $"{AnsiCodes.DefaultBackground}{AnsiCodes.DefaultForeground}");
 
         line = line.Insert(index,
             $"{AnsiCodes.ColorToAnsi(AnsiCodes.ColorPosition.Foreground, rule.Foreground)}{AnsiCodes.ColorToAnsi(AnsiCodes.ColorPosition.Background, rule.Background)}");
 
-        return new RuleResult(true, line);
-    }
-
-    private class RuleResult
-    {
-        public bool Success { get; }
-        public string Line { get; }
-
-        public RuleResult(bool success, string line)
-        {
-            Success = success;
-            Line = line;
-        }
+        return line;
     }
 }

@@ -13,14 +13,15 @@ internal class SerilogList : IRulesList
                 new ColorizationRule
                 {
                     Name = "Information",
-                    Pattern = @"\[(INF)\]",
+                    Pattern = @"\[(?<c>INF)\]",
                     Foreground = AnsiCodes.Colors.Green,
+                    Background = AnsiCodes.Colors.Default,
                     Mode = ColorizationRule.Modes.First
                 },
                 new ColorizationRule
                 {
                     Name = "Warning",
-                    Pattern = @"\[(WRN)\]",
+                    Pattern = @"\[(?<c>WRN)\]",
                     Foreground = AnsiCodes.Colors.Black,
                     Background = AnsiCodes.Colors.Yellow,
                     Mode = ColorizationRule.Modes.First
@@ -28,14 +29,15 @@ internal class SerilogList : IRulesList
                 new ColorizationRule
                 {
                     Name = "Error",
-                    Pattern = @"\[(ERR)\]",
+                    Pattern = @"\[(?<c>ERR)\]",
                     Foreground = AnsiCodes.Colors.BrightRed,
+                    Background = AnsiCodes.Colors.Default,
                     Mode = ColorizationRule.Modes.First
                 },
                 new ColorizationRule
                 {
                     Name = "Fatal",
-                    Pattern = @"\[(FTL)\]",
+                    Pattern = @"\[(?<c>FTL)\]",
                     Foreground = AnsiCodes.Colors.BrightWhite,
                     Background = AnsiCodes.Colors.Red,
                     Mode = ColorizationRule.Modes.First
@@ -43,9 +45,10 @@ internal class SerilogList : IRulesList
                 new ColorizationRule
                 {
                     Name = "Datetime",
-                    Pattern = @"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3} [\+\-][0-9]{2}:[0-9]{2}",
+                    Pattern = @"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3} [\+\-]?[0-9]{2}:[0-9]{2}",
                     Foreground = AnsiCodes.Colors.Magenta,
-                    Mode = ColorizationRule.Modes.First
+                    Background = AnsiCodes.Colors.Default,
+                    Mode = ColorizationRule.Modes.All
                 }
             };
         }

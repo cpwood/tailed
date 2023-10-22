@@ -10,7 +10,7 @@
     let anchor: Anchor;
     let lines: ConsoleLine[];
     $: lines = [];
-    let lastLine: ConsoleLine;
+    let lastLine: ConsoleLine | undefined;
     let spanIndex = 0;
     let lockToBottomUntil = 0;
     let latestVisible: boolean;
@@ -41,28 +41,41 @@
         await start();
     });
 
-    connection.on('ReceiveData', (data) => {
-        if (lastLine && data.indexOf('\n') == -1) {
-            // A change to the existing line of text.
-            lastLine.appendText(data);
-        }
-        else {
-            // A new line of text.
-            if (anchor.isCurrentlyAnchored()) {
-                lockToBottomUntil = Date.now() + 250;
+    connection.on('ReceiveData', (data: string) => {
+        const parts = data.split('\n');
+
+        for (let i = 0; i < parts.length; i++) {
+            if (i != parts.length - 1)
+                parts[i] += '\n';
+
+            if (lastLine) { 
+                // Existing line
+                lastLine.appendText(parts[i]);
+                lines = lines;
+
+                if (parts[i].indexOf('\n') != -1)
+                    lastLine = undefined;
             }
+            else {
+                // A new line of text.
+                if (anchor.isCurrentlyAnchored()) {
+                    lockToBottomUntil = Date.now() + 250;
+                }
 
-            lastLine = new ConsoleLine(spanIndex, data);
-            lines.push(lastLine);
-            spanIndex++;
+                lastLine = new ConsoleLine(spanIndex, parts[i]);
+                lines.push(lastLine);
+                spanIndex++;
 
-            if (lines.length > maxRows)
-                lines.pop();
+                if (lines.length > maxRows) {
+                    lines = lines.slice(maxRows * -1);
+                }
+                else {
+                    lines = lines;
+                }
 
-            lines = lines;
-
-            if (Date.now() < lockToBottomUntil) {
-                anchor.scrollToBottom();
+                if (Date.now() < lockToBottomUntil) {
+                    anchor.scrollToBottom();
+                }
             }
         }
     });
