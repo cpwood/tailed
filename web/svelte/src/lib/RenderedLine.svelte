@@ -1,9 +1,8 @@
 <script lang="ts">
-    import { AnsiUp } from 'ansi_up';
     import type { ConsoleLine } from './ConsoleLine';
+    import { AnsiUp } from 'ansi_up';
     export let line: ConsoleLine;
-
-    const ansiUp = new AnsiUp();
+    export let ansiUp: AnsiUp;
 </script>
 
 <style type="text/css">
