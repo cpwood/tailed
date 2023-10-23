@@ -1,14 +1,11 @@
 <script lang="ts">
     import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-    import { AnsiUp } from 'ansi_up';
     import Spacer from './Spacer.svelte';
     import Anchor from './Anchor.svelte';
     import { ConsoleLine } from './ConsoleLine';
     import RenderedLine from './RenderedLine.svelte';
     import { onMount } from 'svelte';
     import Latest from './Latest.svelte';
-    
-    const ansiUp = new AnsiUp();
 
     let anchor: Anchor;
     let lines: ConsoleLine[];
@@ -123,6 +120,6 @@
     }
 </style>
 
-<pre><Spacer />{#each lines as line}<RenderedLine bind:line={line} ansiUp={ansiUp} />{/each}<Anchor bind:this={anchor} on:anchored={onAnchored} /></pre>
+<pre><Spacer />{#each lines as line}<RenderedLine bind:line={line} />{/each}<Anchor bind:this={anchor} on:anchored={onAnchored} /></pre>
 
 <Latest visible={latestVisible} />
