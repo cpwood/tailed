@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
     import { AnsiUp } from 'ansi_up';
-    export const ansi_up = new AnsiUp();
+    const ansi_up = new AnsiUp();
 </script>
 
 <script lang="ts">
