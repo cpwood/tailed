@@ -23,7 +23,7 @@ app.Map("/", (HttpContext context) =>
 });
 
 #if DEBUG
-    app.MapWhen(x => Regex.IsMatch(x.Request.Path.ToString(), @"^/[a-zA-Z0-9_\-=]{22}$"), 
+    app.MapWhen(x => Regex.IsMatch(x.Request.Path.ToString(), @"^/[a-zA-Z0-9_\-=~]{22}$"), 
     config =>
     {
         // Load index.html on each request so changes to Svelte are picked up.
