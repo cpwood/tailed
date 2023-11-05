@@ -55,7 +55,7 @@ namespace Tailed.Common
                 await _connection.StopAsync();
                 await _connection.DisposeAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Ignore
             }

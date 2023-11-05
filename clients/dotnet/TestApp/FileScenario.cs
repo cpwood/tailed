@@ -34,10 +34,10 @@ internal static class FileScenario
 
         logger.LogInformation("Started The Test");
 
-        for (var i = 0; i < 500; i++)
+        for (var i = 0; i < 20000; i++)
         {
             logger.Log(TestData.GetRandomLogLevel(), TestData.GetRandomSentence());
-            await Task.Delay(100);
+            await Task.Delay(10);
         }
     }
 }
